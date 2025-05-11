@@ -36,6 +36,7 @@ const uploadFields = upload.fields([
   { name: 'businessImages', maxCount: 10 },
   { name: 'menuImages', maxCount: 10 },
   { name: 'certificates', maxCount: 10 },
+  { name: 'serviceImages', maxCount: 10 }, // Added field for service images
 ]);
 
 const router = express.Router();
@@ -167,6 +168,9 @@ router.post('/provider/register', uploadFields, async (req, res) => {
     const certificates = req.files?.certificates
       ? req.files.certificates.map((file) => file.path)
       : [];
+    const serviceImages = req.files?.serviceImages
+      ? req.files.serviceImages.map((file) => file.path)
+      : [];
 
     // Handle fields that should be arrays (businessCategories, servicesFor, serviceLocation)
     const parsedBusinessCategories = businessCategories
@@ -204,11 +208,19 @@ router.post('/provider/register', uploadFields, async (req, res) => {
         : businessHours
       : {};
 
-    const parsedServices = services
+    let parsedServices = services
       ? typeof services === 'string'
         ? JSON.parse(services)
         : services
       : [];
+
+    // Map service images to the corresponding service
+    if (parsedServices.length > 0) {
+      parsedServices = parsedServices.map((service, index) => ({
+        ...service,
+        image: serviceImages[index] ? serviceImages[index] : '', // Associate image with the service
+      }));
+    }
 
     const user = new User({
       firstName,
