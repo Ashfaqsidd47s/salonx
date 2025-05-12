@@ -18,14 +18,16 @@ interface BusinessHours {
 }
 
 interface Service {
+  _id: string;
   name: string;
   price: number;
   duration: number;
+  image: string;
 }
 
+
 interface CartItem extends Service {
-  id: string;
-  salonId: string;
+  salonId: string; // To track which salon the service belongs to
 }
 
 interface CheckoutDialogProps {
@@ -34,8 +36,7 @@ interface CheckoutDialogProps {
   businessHours: BusinessHours;
   cartItems: CartItem[];
   setCartItems: React.Dispatch<React.SetStateAction<CartItem[]>>;
-  onTimeSlotSelected: (day: string, timeSlot: string) => void;
-  onCheckout: () => void
+  onCheckout: (day: string, timeSlot: string) => void;
 }
 
 const CheckoutDialog: React.FC<CheckoutDialogProps> = ({
@@ -44,7 +45,6 @@ const CheckoutDialog: React.FC<CheckoutDialogProps> = ({
   businessHours,
   cartItems,
   setCartItems,
-  onTimeSlotSelected,
   onCheckout
 }) => {
   // State for the dialog
@@ -137,35 +137,8 @@ const CheckoutDialog: React.FC<CheckoutDialogProps> = ({
   // Checkout handler (fake API call)
   const handleCheckout = async () => {
     if (!selectedTimeSlot || !selectedDay) return;
-
-    try {
-        console.log(cartItems,selectedDay, selectedTimeSlot)
-        onCheckout()
-      // Simulate API call with a delay
-      await new Promise((resolve, reject) => {
-        setTimeout(() => {
-          // Simulate a random success or failure
-          const success = Math.random() > 0.2; // 80% chance of success
-          if (success) {
-            resolve('Checkout successful');
-          } else {
-            reject(new Error('Checkout failed due to payment issue'));
-          }
-        }, 2000); // 2-second delay
-      });
-
-      // On success, clear the cart, notify parent of selected time slot, and close the dialog
-      setCartItems([]);
-      localStorage.setItem('cart', JSON.stringify([]));
-      onTimeSlotSelected(selectedDay, selectedTimeSlot);
-      onOpenChange(false);
-      setSelectedDayIndex(0);
-      setSelectedTimeSlot(null);
-      toast.success('Checkout successful! Your booking is confirmed.');
-    } catch (err: any) {
-      // On failure, show an error message
-      toast.error(err.message || 'Checkout failed. Please try again.');
-    }
+    console.log(selectedDay, selectedTimeSlot)
+    onCheckout(selectedDay, selectedTimeSlot);
   };
 
   // Reset state when dialog closes

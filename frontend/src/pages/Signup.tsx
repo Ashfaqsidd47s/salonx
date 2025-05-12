@@ -63,7 +63,7 @@ function Signup() {
     try {
       await axios.post('http://localhost:8080/api/auth/user/register', formData);
       toast.success('Signup successful!');
-      navigate('/success');
+      navigate('/explore');
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'An error occurred during signup.';
       toast.error(errorMessage);

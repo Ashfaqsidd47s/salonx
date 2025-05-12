@@ -20,9 +20,11 @@ const addressSchema = new mongoose.Schema({
 
 // Sub-schema for services
 const serviceSchema = new mongoose.Schema({
+  _id: { type: mongoose.Schema.Types.ObjectId, auto: true }, // Automatically generate an ID for each service
   name: { type: String, required: true, trim: true },
   price: { type: Number, required: true, min: 0 },
   duration: { type: Number, required: true, min: 0 }, // Duration in minutes
+  image: { type: String, default: '' }, // Store the file path or URL of the service image
 });
 
 // Main user schema

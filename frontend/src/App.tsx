@@ -7,6 +7,8 @@ import Signup from './pages/Signup';
 import SignIn from './pages/SignIn';
 import SignInSalon from './pages/SignInSalon';
 import Dashboard from './pages/Dashboard';
+import UserBookings from './pages/UserBookings';
+import SalonBookings from './pages/SalonBookings';
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signin-salon" element={<SignInSalon />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/user/bookings" element={<UserBookings />} />
+          <Route path="/salon/bookings" element={<SalonBookings />} />
           <Route path="/signup-salon" element={<SignupSalon />} />
         </Routes>
       </BrowserRouter>

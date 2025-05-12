@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -9,10 +9,11 @@ import HeroSection from '@/components/HeroSection';
 import SalonInfo from '@/components/SalonInfo';
 import BusinessHours from '@/components/BussinessHour';
 import Footer from '@/components/common/Footer';
-import { FaClock } from 'react-icons/fa6';
+import { FaClock, FaScissors } from 'react-icons/fa6';
 import { CiShoppingTag } from 'react-icons/ci';
 import CheckoutDialog from '@/components/CheckoutModal';
-
+import { FaRegUserCircle, FaShoppingCart } from 'react-icons/fa';
+import { IoIosSearch } from 'react-icons/io';
 
 // Define TypeScript interfaces for the salon data
 interface Address {
@@ -25,13 +26,14 @@ interface Address {
 }
 
 interface Service {
+  _id: string;
   name: string;
   price: number;
   duration: number;
+  image: string;
 }
 
 interface CartItem extends Service {
-  id: string; // Unique ID for each cart item
   salonId: string; // To track which salon the service belongs to
 }
 
@@ -120,7 +122,7 @@ function SalonDetails() {
 
     // Check if the service is already in the cart for this salon
     const exists = cartItems.some(
-      (item) => item.name === service.name && item.salonId === id
+      (item) => item._id === service._id && item.salonId === id
     );
     if (exists) {
       toast.info(`${service.name} is already in your cart!`);
@@ -128,8 +130,11 @@ function SalonDetails() {
     }
 
     const cartItem: CartItem = {
-      ...service,
-      id: `${id}-${service.name}-${Date.now()}`, // Unique ID for the cart item
+      _id: service._id,
+      name: service.name,
+      price: service.price,
+      duration: service.duration,
+      image: service.image,
       salonId: id,
     };
 
@@ -140,7 +145,7 @@ function SalonDetails() {
   // Remove from cart
   const handleRemoveFromCart = (itemId: string) => {
     setCartItems((prev) => {
-      const updatedCart = prev.filter((item) => item.id !== itemId);
+      const updatedCart = prev.filter((item) => item._id !== itemId);
       return updatedCart;
     });
     toast.info('Item removed from cart!');
@@ -152,8 +157,50 @@ function SalonDetails() {
   };
 
   // Handle time slot selection from the dialog
-  const handleTimeSlotSelected = (day: string, timeSlot: string) => {
-    setSelectedBooking({ day, timeSlot });
+
+  const handleBooking = async (day: string, timeSlot: string) => {
+    if (!id || !day || !timeSlot || cartItems.length === 0) {
+      toast.error('Please select a time slot and add services to book.');
+      return;
+    }
+
+    setSelectedBooking({day,timeSlot})
+    console.log(selectedBooking)
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error('Please sign in to book services.');
+        return;
+      }
+
+      const bookingData = {
+        salonId: id,
+        services: cartItems.map((item) => ({
+          _id: item._id,
+          name: item.name,
+          price: item.price,
+          duration: item.duration,
+        })),
+        day: day,
+        timeSlot: timeSlot,
+      };
+
+      await axios.post('http://localhost:8080/api/salon/bookings', bookingData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      toast.success('Booking confirmed successfully!');
+      setCartItems([]); // Clear cart
+      localStorage.removeItem('cart'); // Clear localStorage
+      setIsCheckoutOpen(false); // Close checkout dialog
+      setSelectedBooking(null); // Reset selected booking
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Failed to create booking.';
+      toast.error(errorMessage);
+    }
   };
 
   // Skeleton Loading Component (Shadcn UI style)
@@ -239,6 +286,40 @@ function SalonDetails() {
 
   return (
     <>
+      <header className="sticky top-0 z-50 bg-white border-b">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex items-center justify-between h-16">
+                    <div className="flex items-center">
+                    <Link to="/" className="flex items-center gap-2">
+                        <FaScissors className="h-6 w-6 text-orange-600" />
+                        <span className="text-xl font-semibold">SALON-X</span>
+                    </Link>
+                    </div>
+                    
+                    <div className="flex-1 max-w-2xl mx-8">
+                    <div className="relative">
+                        <IoIosSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <input
+                        type="text"
+                        placeholder="Search for salon, services..."
+                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        />
+                    </div>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                    <button className="relative">
+                        <FaShoppingCart className="h-6 w-6 text-gray-600" />
+                        <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">2</span>
+                    </button>
+                    <Link to="/signin" className="flex items-center gap-2 text-sm font-medium">
+                        <FaRegUserCircle className="h-6 w-6" />
+                        Sign In
+                    </Link>
+                    </div>
+                </div>
+            </div>
+        </header>
       <main className="p-4 md:p-6">
         <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} closeOnClick pauseOnHover />
         <div className="max-w-7xl mx-auto px-4">
@@ -330,7 +411,7 @@ function SalonDetails() {
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Services</h2>
             <div className="space-y-6">
               {salon.services.map((service) => (
-                <div key={service.name} className="flex items-center justify-between border-b border-gray-200 pb-6">
+                <div key={service._id} className="flex items-center justify-between border-b border-gray-200 pb-6">
                   <div className="flex items-center">
                     <div className="w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden mr-4">
                       <img
@@ -376,13 +457,13 @@ function SalonDetails() {
               ) : (
                 <div className="space-y-4">
                   {cartItems.map((item) => (
-                    <div key={item.id} className="flex justify-between items-center">
+                    <div key={item._id} className="flex justify-between items-center">
                       <div>
                         <h4 className="font-medium">{item.name}</h4>
                         <p className="text-gray-500 text-sm">${item.price.toFixed(2)}</p>
                       </div>
                       <button
-                        onClick={() => handleRemoveFromCart(item.id)}
+                        onClick={() => handleRemoveFromCart(item._id)}
                         className="text-red-500 text-sm"
                       >
                         Remove
@@ -436,8 +517,7 @@ function SalonDetails() {
           businessHours={salon.hours}
           cartItems={cartItems}
           setCartItems={setCartItems}
-          onTimeSlotSelected={handleTimeSlotSelected}
-          onCheckout={()=> console.log("selected booking", selectedBooking)}
+          onCheckout={handleBooking}
         />
       )}
     </>

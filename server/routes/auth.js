@@ -4,11 +4,20 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
+import dotenv from 'dotenv';
+
+dotenv.config()
 
 // Set up multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Store files in uploads/ directory
+    const dir = 'uploads/';
+    // Create the directory if it doesn't exist
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -36,8 +45,18 @@ const uploadFields = upload.fields([
   { name: 'businessImages', maxCount: 10 },
   { name: 'menuImages', maxCount: 10 },
   { name: 'certificates', maxCount: 10 },
-  { name: 'serviceImages', maxCount: 10 }, // Added field for service images
+  { name: 'serviceImages', maxCount: 10 },
 ]);
+
+// Error handling middleware for multer
+const handleMulterError = (err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({ message: 'File upload error', error: err.message });
+  } else if (err) {
+    return res.status(400).json({ message: 'File upload error', error: err.message });
+  }
+  next();
+};
 
 const router = express.Router();
 
@@ -125,7 +144,7 @@ router.post('/user/login', async (req, res) => {
 });
 
 // REGISTER ROUTE (PROVIDER)
-router.post('/provider/register', uploadFields, async (req, res) => {
+router.post('/provider/register', uploadFields, handleMulterError, async (req, res) => {
   try {
     const {
       firstName,
@@ -184,7 +203,7 @@ router.post('/provider/register', uploadFields, async (req, res) => {
     const parsedServicesFor = servicesFor
       ? Array.isArray(servicesFor)
         ? servicesFor
-        : [servicesFor] // Wrap the string in an array
+        : [servicesFor]
       : [];
 
     const parsedServiceLocation = serviceLocation
@@ -214,11 +233,18 @@ router.post('/provider/register', uploadFields, async (req, res) => {
         : services
       : [];
 
+    // Validate number of serviceImages
+    if (serviceImages.length > parsedServices.length) {
+      return res.status(400).json({
+        message: 'Number of service images cannot exceed the number of services',
+      });
+    }
+
     // Map service images to the corresponding service
     if (parsedServices.length > 0) {
       parsedServices = parsedServices.map((service, index) => ({
         ...service,
-        image: serviceImages[index] ? serviceImages[index] : '', // Associate image with the service
+        image: serviceImages[index] ? serviceImages[index] : '',
       }));
     }
 
