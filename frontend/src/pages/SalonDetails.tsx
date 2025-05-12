@@ -287,39 +287,41 @@ function SalonDetails() {
   return (
     <>
       <header className="sticky top-0 z-50 bg-white border-b">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between h-16">
-                    <div className="flex items-center">
-                    <Link to="/" className="flex items-center gap-2">
-                        <FaScissors className="h-6 w-6 text-orange-600" />
-                        <span className="text-xl font-semibold">SALON-X</span>
-                    </Link>
-                    </div>
-                    
-                    <div className="flex-1 max-w-2xl mx-8">
-                    <div className="relative">
-                        <IoIosSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                        <input
-                        type="text"
-                        placeholder="Search for salon, services..."
-                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500"
-                        />
-                    </div>
-                    </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center justify-between h-16">
+                  <div className="flex items-center">
+                  <Link to="/" className="flex items-center gap-2">
+                      <FaScissors className="h-6 w-6 text-orange-600" />
+                      <span className="text-xl font-semibold">SALON-X</span>
+                  </Link>
+                  </div>
+                  
+                  <div className="flex-1 max-w-2xl mx-8">
+                  <div className="relative">
+                      <IoIosSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <input
+                      type="text"
+                      placeholder="Search for salon, services..."
+                      className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      />
+                  </div>
+                  </div>
 
-                    <div className="flex items-center gap-4">
-                    <button className="relative">
-                        <FaShoppingCart className="h-6 w-6 text-gray-600" />
-                        <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">2</span>
-                    </button>
+                  <div className="flex items-center gap-4">
+                    <Link to="/user/bookings">
+                      <button className="relative">
+                          <FaShoppingCart className="h-6 w-6 text-gray-600" />
+                          <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">2</span>
+                      </button>
+                    </Link>
                     <Link to="/signin" className="flex items-center gap-2 text-sm font-medium">
                         <FaRegUserCircle className="h-6 w-6" />
                         Sign In
                     </Link>
-                    </div>
-                </div>
-            </div>
-        </header>
+                  </div>
+              </div>
+          </div>
+      </header>
       <main className="p-4 md:p-6">
         <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} closeOnClick pauseOnHover />
         <div className="max-w-7xl mx-auto px-4">
